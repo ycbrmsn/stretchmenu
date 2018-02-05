@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>stretchmenu的demo</title>
+  <script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
+  <script type="text/javascript" src="js/jquery.stretchmenu-1.0.0.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/stretchmenu-1.0.0.css">
+</head>
+<body>
+  <div id="stretchmenu" style="position: absolute; top: 60px;"></div>
+  <div id="stretchmenu2" style="position: absolute; top: 60px; left: 50%;"></div>
+  <script type="text/javascript">
+    function fillData(arr, dep, depArr) {
+      for (var i = 0; i < depArr[3 - dep]; i++) {
+        var obj = {
+          title: (4 - dep) + '级菜单' + (i + 1)
+        }
+        if (dep > 0) {
+          obj.children = [];
+          fillData(obj.children, dep - 1, depArr);
+        }
+        arr.push(obj);
+      }
+    }
+
+    var data = [];
+    fillData(data, 3, [20, 20, 7]);
+    $("#stretchmenu").stretchmenu({
+      data: data
+    });
+    $("#stretchmenu2").stretchmenu({
+      data: [
+        {
+          title: '菜单1',
+          children: [
+            {
+              title: '菜单11',
+              children: [
+                {
+                  title: '菜单111'
+                }
+              ]
+            }
+          ]
+        },
+        {
+          title: '菜单2'
+        },
+        {
+          title: '菜单3的史莱克的'
+        },
+        {
+          title: '菜单4',
+          children: [
+            {
+              title: '菜单1'
+            }
+          ]
+        },
+        {
+          title: '菜单5'
+        },
+        {
+          title: '菜单6'
+        }
+      ]
+    });
+  </script>
+</body>
+</html>
