@@ -9,7 +9,6 @@
  *         修改了google浏览器下子菜单无滚动条时移入出现的滚动条闪烁问题
  *   1.0.3 2018-02-06 修改滚动到底部上方菜单项未对齐时突出显示菜单的问题
  *   1.0.4 2018-02-06 窗口大小改变后菜单改为进行重置，底部菜单项未显示完全时移入显示完全
- *   1.1.0 2018-02-07 加上是否有图标配置，并且如果有图标，则可以缩小放大
  */
 ;(function (factory) {
   if (typeof define === "function" && define.amd) {
@@ -24,7 +23,6 @@
     var defaultOption = {
       menuTop: 60, // 菜单的头部位置
       menuWidth: 200, // 一级菜单的宽度
-      menuShrinkWidth: 50, // 菜单收缩后的宽度
       subMenuMaxShowSize: 7, // 子菜单最多显示项数
       menuItemHeight: 40, // 菜单项高度
       menuItemFontSize: 16, // 菜单项字体大小
@@ -38,13 +36,15 @@
       menuItemMaxSizeFirstLevel: 0, // 一级菜单项最大中文字数，为0时与menuItemMaxSize相同
       menuItemMaxSizeSecondLevel: 0, // 二级菜单项最大中文字数，为0时与menuItemMaxSize相同
       menuItemMaxSizeThirdLevel: 0, // 三级菜单项最大中文字数，为0时与menuItemMaxSize相同
-      menuItemHasIcon: false, // 菜单项是否有图标
-      menuItemIconWidth: 20, // 菜单项图标宽度
-      menuItemIconHeight: 20, // 菜单项图标高度
+      // menuItemBgColorFirstLevel: '#2F4056', // 一级菜单背景颜色
+      // menuItemBgColorSecondLevel: '#2F4056', // 二级菜单背景颜色
+      // menuItemBgColorThirdLevel: '#2F4056', // 三级菜单背景颜色
+      // menuItemActiveBgColorFirstLevel: '#415977', // 一级菜单选中时的背景颜色
+      // menuItemActiveBgColorSecondLevel: '#6e8cb0', // 二级菜单选中时的背景颜色
+      // menuItemActiveBgColorThirdLevel: '#6e8cb0', // 三级菜单选中时的背景颜色
       menuScrollPannel: 30, // 滚动按钮栏的高度
       moreIconWidth: 10, // 更多图标的大小
       ellipticalChars: '...', // 超出字数时显示的省略标志
-      isMenuStretched: true,
       clickMenu: function (data, e) {
         console.log(data);
       }, // 菜单点击事件
@@ -81,22 +81,15 @@
     var opt = $.extend(defaultOption, options);
     // 补全opt中的缺省值
     completOpt(opt, ['menuItemHeight', 'menuItemFontSize', 'menuItemMaxSize']);
-
-    var $root = $(this);
-    // 初始化
-    init($root, opt);
-    // 重置菜单
-    resizeEnd($root, function () {
+    return this.each(function () {
+      var $root = $(this);
+      // 初始化
       init($root, opt);
-    }, 500);
-
-    return {
-      toggleMenu: function () {
-        if (opt.menuItemHasIcon) {
-          toggleMenu($root, opt);
-        }
-      }
-    }
+      // 重置菜单
+      resizeEnd($root, function () {
+        init($root, opt);
+      }, 500);
+    });
   }
 
   /**
@@ -212,9 +205,9 @@
 
       var shortTitle = getShortTitle(element.title, levelCamel, opt);
       if (shortTitle) {
-        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '" title="' + element.title + '" storetitle="' + shortTitle + '">' + shortTitle + '</a>';
+        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '" title="' + element.title + '">' + shortTitle + '</a>';
       } else {
-        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '" storetitle="' + element.title + '">' + element.title + '</a>';
+        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '">' + element.title + '</a>';
       }
       // sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '">' + element.title + '</a>';
 
@@ -233,14 +226,13 @@
     sb += '<dl class="stretchmenu-list stretchmenu-list__' + level + ' stretchmenu-list__visible">';
     for (var i = 0; i < data.length; i++) {
       var element = data[i];
-      var extraClass = element.extraClass || '';
       sb += '<dd class="stretchmenu-item stretchmenu-item__' + level + ' stretchmenu-item__visible">';
 
       var shortTitle = getShortTitle(element.title, levelCamel, opt);
       if (shortTitle) {
-        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '" title="' + element.title + '" storetitle="' + shortTitle + '"><i class="stretchmenu-itemi ' + extraClass + '"></i><span>' + shortTitle + '</span></a>';
+        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '" title="' + element.title + '">' + shortTitle + '</a>';
       } else {
-        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '" title="' + element.title + '" storetitle="' + element.title + '"><i class="stretchmenu-itemi ' + extraClass + '"></i><span>' + element.title + '</span></a>';
+        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '">' + element.title + '</a>';
       }
 
       // 移入效果线
@@ -349,15 +341,6 @@
     initListStyles($root.find('.stretchmenu-list__secondlevel'));
     // 三级菜单栏的样式
     initListStyles($root.find('.stretchmenu-list__thirdlevel'));
-
-    // 菜单图标样式
-    if (opt.menuItemHasIcon) {
-      $root.find('.stretchmenu-itemi').css({
-        'width': opt.menuItemIconWidth + 'px',
-        'height': opt.menuItemIconHeight + 'px',
-        'marginRight': '15px'
-      });
-    }
 
     // 更多图标样式，图标大小10x10
     $root.find('.stretchmenu-item__firstlevel > .stretchmenu-more').css({
@@ -1327,77 +1310,6 @@
     $menuItemShow.removeClass('stretchmenu-item__hover');
   }
 
-  function toggleMenu($root, opt) {
-    var $visibleBox = $root.children('.stretchmenu-list__visiblebox');
-    var $menuListShow = $visibleBox.children('.stretchmenu-list__firstlevel');
-    var $menuItemsShow = $menuListShow.children('.stretchmenu-item__firstlevel');
-    var $menuItemAsShow = $menuItemsShow.children('.stretchmenu-a__firstlevel');
-    var $menuItemIconsShow = $menuItemAsShow.children('.stretchmenu-itemi');
-    var $moreIcons = $menuItemsShow.children('.stretchmenu-more');
-    var $menuList = $root.children('.stretchmenu-list__firstlevel');
-    var $menuItems = $menuList.children('.stretchmenu-item__firstlevel');
-    var $menuItemAs = $menuItems.children('.stretchmenu-a__firstlevel');
-    var $scrollBtn = $visibleBox.find('.stretchmenu-scrollbtn');
-    var menuWidth;
-    var menuListWidth;
-    var menuItemMargin;
-    var scrollBtnMargin;
-    if (opt.isMenuStretched) {
-      // 当前菜单是展开状态(上方条件)
-      menuWidth = opt.menuShrinkWidth;
-      menuListWidth = opt.menuShrinkWidth + opt.scrollWidth;
-      scrollBtnMargin = '4px 2px 0';
-      // 隐藏更多图标
-      $moreIcons.hide();
-      // 文字隐藏
-      $menuItemAsShow.find('span').text('');
-      // 文字隐藏
-      $menuItemAs.text('');
-      menuItemMarginRight = '0px';
-    } else {
-      // 当前菜单是收缩状态(上方条件)
-      menuWidth = opt.menuWidth;
-      menuListWidth = opt.menuWidth + opt.scrollWidth;
-      scrollBtnMargin = '';
-      // 文字显示
-      $menuItemAsShow.each(function (index, element) {
-        $(this).find('span').text($(this).attr('storetitle'));
-      });
-      // 文字显示
-      $menuItemAs.each(function (index, element) {
-        $(this).text($(this).attr('storetitle'));
-      });
-      menuItemMarginRight = '15px';
-    }
-    opt.isMenuStretched = !opt.isMenuStretched;
-    $root.animate({
-      'width': menuWidth + 'px'
-    });
-    $visibleBox.animate({
-      'width': menuWidth + 'px'
-    });
-    $menuListShow.animate({
-      'width': menuListWidth + 'px'
-    });
-    $menuItemsShow.animate({
-      'width': menuWidth + 'px'
-    }, function () {
-      if (opt.isMenuStretched) {
-        // 显示更多图标
-        $moreIcons.show();
-      }
-    });
-    $menuList.animate({
-      'width': menuWidth + 'px'
-    });
-    $scrollBtn.css({
-      'margin': scrollBtnMargin
-    })
-    $menuItemIconsShow.css({
-      'marginRight': menuItemMarginRight
-    });
-  }
-
   /**
    * 是否有滚动条
    * @param  {[type]}  $list [description]
@@ -1444,10 +1356,6 @@
       // 如果有更多图标，则固定添加一个字长度
       if ($(this).find('.stretchmenu-more').size()) {
         textLength++;
-      }
-      // 如果菜单项有图标，则再加两个字宽度
-      if (opt.menuItemHasIcon) {
-        textLength += 2;
       }
       if (textLength > maxTextLength) {
         maxTextLength = textLength;

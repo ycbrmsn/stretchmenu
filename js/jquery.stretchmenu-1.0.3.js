@@ -1,15 +1,13 @@
 /**
  * 左侧伸展导航菜单
  * @auto jzw
- * @version 1.0.4
+ * @version 1.0.3
  * @history
  *   1.0.0 2018-02-02 完成导航菜单基本功能
  *   1.0.1 2018-02-02 修改了js中部分变量无值可能会报错的问题
  *   1.0.2 2018-02-05 修改移入效果线被遮挡的问题，修改了更多图标会闪动的问题，修改google浏览器下滚动条宽度计算不正常的问题，
  *         修改了google浏览器下子菜单无滚动条时移入出现的滚动条闪烁问题
- *   1.0.3 2018-02-06 修改滚动到底部上方菜单项未对齐时突出显示菜单的问题
- *   1.0.4 2018-02-06 窗口大小改变后菜单改为进行重置，底部菜单项未显示完全时移入显示完全
- *   1.1.0 2018-02-07 加上是否有图标配置，并且如果有图标，则可以缩小放大
+ *   1.0.3 2018-02-06 修改滚动到底部上方菜单未对齐时突出显示菜单的问题
  */
 ;(function (factory) {
   if (typeof define === "function" && define.amd) {
@@ -24,7 +22,6 @@
     var defaultOption = {
       menuTop: 60, // 菜单的头部位置
       menuWidth: 200, // 一级菜单的宽度
-      menuShrinkWidth: 50, // 菜单收缩后的宽度
       subMenuMaxShowSize: 7, // 子菜单最多显示项数
       menuItemHeight: 40, // 菜单项高度
       menuItemFontSize: 16, // 菜单项字体大小
@@ -38,13 +35,15 @@
       menuItemMaxSizeFirstLevel: 0, // 一级菜单项最大中文字数，为0时与menuItemMaxSize相同
       menuItemMaxSizeSecondLevel: 0, // 二级菜单项最大中文字数，为0时与menuItemMaxSize相同
       menuItemMaxSizeThirdLevel: 0, // 三级菜单项最大中文字数，为0时与menuItemMaxSize相同
-      menuItemHasIcon: false, // 菜单项是否有图标
-      menuItemIconWidth: 20, // 菜单项图标宽度
-      menuItemIconHeight: 20, // 菜单项图标高度
+      // menuItemBgColorFirstLevel: '#2F4056', // 一级菜单背景颜色
+      // menuItemBgColorSecondLevel: '#2F4056', // 二级菜单背景颜色
+      // menuItemBgColorThirdLevel: '#2F4056', // 三级菜单背景颜色
+      // menuItemActiveBgColorFirstLevel: '#415977', // 一级菜单选中时的背景颜色
+      // menuItemActiveBgColorSecondLevel: '#6e8cb0', // 二级菜单选中时的背景颜色
+      // menuItemActiveBgColorThirdLevel: '#6e8cb0', // 三级菜单选中时的背景颜色
       menuScrollPannel: 30, // 滚动按钮栏的高度
       moreIconWidth: 10, // 更多图标的大小
       ellipticalChars: '...', // 超出字数时显示的省略标志
-      isMenuStretched: true,
       clickMenu: function (data, e) {
         console.log(data);
       }, // 菜单点击事件
@@ -81,22 +80,11 @@
     var opt = $.extend(defaultOption, options);
     // 补全opt中的缺省值
     completOpt(opt, ['menuItemHeight', 'menuItemFontSize', 'menuItemMaxSize']);
-
-    var $root = $(this);
-    // 初始化
-    init($root, opt);
-    // 重置菜单
-    resizeEnd($root, function () {
+    return this.each(function () {
+      var $root = $(this);
+      // 初始化
       init($root, opt);
-    }, 500);
-
-    return {
-      toggleMenu: function () {
-        if (opt.menuItemHasIcon) {
-          toggleMenu($root, opt);
-        }
-      }
-    }
+    });
   }
 
   /**
@@ -212,9 +200,9 @@
 
       var shortTitle = getShortTitle(element.title, levelCamel, opt);
       if (shortTitle) {
-        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '" title="' + element.title + '" storetitle="' + shortTitle + '">' + shortTitle + '</a>';
+        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '" title="' + element.title + '">' + shortTitle + '</a>';
       } else {
-        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '" storetitle="' + element.title + '">' + element.title + '</a>';
+        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '">' + element.title + '</a>';
       }
       // sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '">' + element.title + '</a>';
 
@@ -233,14 +221,13 @@
     sb += '<dl class="stretchmenu-list stretchmenu-list__' + level + ' stretchmenu-list__visible">';
     for (var i = 0; i < data.length; i++) {
       var element = data[i];
-      var extraClass = element.extraClass || '';
       sb += '<dd class="stretchmenu-item stretchmenu-item__' + level + ' stretchmenu-item__visible">';
 
       var shortTitle = getShortTitle(element.title, levelCamel, opt);
       if (shortTitle) {
-        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '" title="' + element.title + '" storetitle="' + shortTitle + '"><i class="stretchmenu-itemi ' + extraClass + '"></i><span>' + shortTitle + '</span></a>';
+        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '" title="' + element.title + '">' + shortTitle + '</a>';
       } else {
-        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '" title="' + element.title + '" storetitle="' + element.title + '"><i class="stretchmenu-itemi ' + extraClass + '"></i><span>' + element.title + '</span></a>';
+        sb += '<a class="stretchmenu-a stretchmenu-a__' + level + '">' + element.title + '</a>';
       }
 
       // 移入效果线
@@ -349,15 +336,6 @@
     initListStyles($root.find('.stretchmenu-list__secondlevel'));
     // 三级菜单栏的样式
     initListStyles($root.find('.stretchmenu-list__thirdlevel'));
-
-    // 菜单图标样式
-    if (opt.menuItemHasIcon) {
-      $root.find('.stretchmenu-itemi').css({
-        'width': opt.menuItemIconWidth + 'px',
-        'height': opt.menuItemIconHeight + 'px',
-        'marginRight': '15px'
-      });
-    }
 
     // 更多图标样式，图标大小10x10
     $root.find('.stretchmenu-item__firstlevel > .stretchmenu-more').css({
@@ -592,6 +570,11 @@
       $this.children('.stretchmenu-curtain').hide();
 
     }, 200);
+
+    // 调整菜单高度
+    $(window).resize(function () {
+      initMenuHeight($root, opt);
+    });
   }
 
   /**
@@ -1145,41 +1128,26 @@
     }
     menuTimeoutObj.menuHoverFunc = function () {
       if (isEnter) {
-        // 如果最后一个状态是移入菜单(上方条件)，
-        // 则判断菜单项是否显示完全，即是否滚动条滚动后让菜单只显示了一部分
+        // 如果最后一个状态是移入菜单，判断菜单是否显示完全，即是否滚动条滚动后让菜单只显示了一部分
         var menuItemHeight = getMenuItemHeight(opt, getPrevLevel(opt, level));
-        var $item = $(item);
-        var $menuList = $item.parent();
+        var $menuList = $(item).parent();
         var scrollTop = $menuList.scrollTop();
-        if (scrollTop % menuItemHeight != 0 && Math.floor(scrollTop / menuItemHeight) == $item.index()) {
-          // 如果没有对齐并且是第一个显示的菜单项，即该菜单项没有显示完全(上方条件)
+        if (scrollTop % menuItemHeight != 0 && Math.floor(scrollTop / menuItemHeight) == $(item).index()) {
+          // 如果没有对齐并且是第一个显示的菜单项，即该菜单项没有显示完全
           // 则向下滚动完全
           $menuList.stop().animate({
-            'scrollTop': $item.index() * menuItemHeight + 'px'
+            'scrollTop': $(item).index() * menuItemHeight + 'px'
           });
           return;
         }
-        // 判断菜单项是否是显示的最下方的菜单，并且是否显示完全
-        if ($menuList.next().is(':visible')) {
-          // 滚动按钮是否显示，即是否可以滚动(上方条件)
-          if ($menuList.height() + scrollTop - menuItemHeight * $item.index() < menuItemHeight) {
-            // 如果菜单的高度 + 滚动高度 - 菜单项头部的位置 < 一个菜单项的高度，即未显示完全(上方条件)
-            // 则向上方滚动一个菜单项高度
-            $menuList.stop().animate({
-              'scrollTop': scrollTop + menuItemHeight + 'px'
-            });
-            return;
-          }
-        }
-        
         if (!menuTimeoutObj.lastMenuState) {
-          // 上一个状态是移出(上方条件)
+          // 上一个状态是移出
           enterMenuItem($root, $(item), opt, level);
         } else if (item !== menuTimeoutObj.lastMenu) {
-          // 如果上一个状态是移入状态且当前菜单项与上一个菜单项不同时(上方条件)
+          // 如果上一个状态是移入状态且当前菜单项与上一个菜单项不同时
           if (level === menuTimeoutObj.lastMenuLevel) {
             // console.log('上一个菜单项与当前菜单项同级')
-            // 如果上一个菜单项与当前菜单项同级(上方条件)
+            // 如果上一个菜单项与当前菜单项同级
             // 则先隐藏上一个菜单项的下级菜单，然后显示对应下级菜单
             leaveMenuItem($root, $(menuTimeoutObj.lastMenu), opt);
             enterMenuItem($root, $(item), opt, level);
@@ -1327,77 +1295,6 @@
     $menuItemShow.removeClass('stretchmenu-item__hover');
   }
 
-  function toggleMenu($root, opt) {
-    var $visibleBox = $root.children('.stretchmenu-list__visiblebox');
-    var $menuListShow = $visibleBox.children('.stretchmenu-list__firstlevel');
-    var $menuItemsShow = $menuListShow.children('.stretchmenu-item__firstlevel');
-    var $menuItemAsShow = $menuItemsShow.children('.stretchmenu-a__firstlevel');
-    var $menuItemIconsShow = $menuItemAsShow.children('.stretchmenu-itemi');
-    var $moreIcons = $menuItemsShow.children('.stretchmenu-more');
-    var $menuList = $root.children('.stretchmenu-list__firstlevel');
-    var $menuItems = $menuList.children('.stretchmenu-item__firstlevel');
-    var $menuItemAs = $menuItems.children('.stretchmenu-a__firstlevel');
-    var $scrollBtn = $visibleBox.find('.stretchmenu-scrollbtn');
-    var menuWidth;
-    var menuListWidth;
-    var menuItemMargin;
-    var scrollBtnMargin;
-    if (opt.isMenuStretched) {
-      // 当前菜单是展开状态(上方条件)
-      menuWidth = opt.menuShrinkWidth;
-      menuListWidth = opt.menuShrinkWidth + opt.scrollWidth;
-      scrollBtnMargin = '4px 2px 0';
-      // 隐藏更多图标
-      $moreIcons.hide();
-      // 文字隐藏
-      $menuItemAsShow.find('span').text('');
-      // 文字隐藏
-      $menuItemAs.text('');
-      menuItemMarginRight = '0px';
-    } else {
-      // 当前菜单是收缩状态(上方条件)
-      menuWidth = opt.menuWidth;
-      menuListWidth = opt.menuWidth + opt.scrollWidth;
-      scrollBtnMargin = '';
-      // 文字显示
-      $menuItemAsShow.each(function (index, element) {
-        $(this).find('span').text($(this).attr('storetitle'));
-      });
-      // 文字显示
-      $menuItemAs.each(function (index, element) {
-        $(this).text($(this).attr('storetitle'));
-      });
-      menuItemMarginRight = '15px';
-    }
-    opt.isMenuStretched = !opt.isMenuStretched;
-    $root.animate({
-      'width': menuWidth + 'px'
-    });
-    $visibleBox.animate({
-      'width': menuWidth + 'px'
-    });
-    $menuListShow.animate({
-      'width': menuListWidth + 'px'
-    });
-    $menuItemsShow.animate({
-      'width': menuWidth + 'px'
-    }, function () {
-      if (opt.isMenuStretched) {
-        // 显示更多图标
-        $moreIcons.show();
-      }
-    });
-    $menuList.animate({
-      'width': menuWidth + 'px'
-    });
-    $scrollBtn.css({
-      'margin': scrollBtnMargin
-    })
-    $menuItemIconsShow.css({
-      'marginRight': menuItemMarginRight
-    });
-  }
-
   /**
    * 是否有滚动条
    * @param  {[type]}  $list [description]
@@ -1445,10 +1342,6 @@
       if ($(this).find('.stretchmenu-more').size()) {
         textLength++;
       }
-      // 如果菜单项有图标，则再加两个字宽度
-      if (opt.menuItemHasIcon) {
-        textLength += 2;
-      }
       if (textLength > maxTextLength) {
         maxTextLength = textLength;
       }
@@ -1495,25 +1388,6 @@
       }
       $this.data('scrollTimeout', setTimeout(function () {
         callback($this, e);
-      }, timeout));
-    });
-  }
-
-  /**
-   * [resizeEnd 窗口大小改变停止]
-   * @param  {[type]}   $dom     [description]
-   * @param  {Function} callback [description]
-   * @param  {[type]}   timeout  [description]
-   * @return {[type]}            [description]
-   */
-  function resizeEnd($dom, callback, timeout) {
-    $(window).resize(function (e) {
-      var resizeTimeout = $dom.data('resizeTimeout');
-      if (resizeTimeout) {
-        clearTimeout(resizeTimeout);
-      }
-      $dom.data('resizeTimeout', setTimeout(function () {
-        callback($dom, e);
       }, timeout));
     });
   }
