@@ -1,7 +1,7 @@
 /**
  * 左侧伸展导航菜单
  * @auto jzw
- * @version 1.1.0
+ * @version 1.1.1
  * @history
  *   1.0.0 2018-02-02 完成导航菜单基本功能
  *   1.0.1 2018-02-02 修改了js中部分变量无值可能会报错的问题
@@ -10,6 +10,7 @@
  *   1.0.3 2018-02-06 修改滚动到底部上方菜单项未对齐时突出显示菜单的问题
  *   1.0.4 2018-02-06 窗口大小改变后菜单改为进行重置，底部菜单项未显示完全时移入显示完全
  *   1.1.0 2018-02-07 加上是否有图标配置，并且如果有图标，则可以缩小放大
+ *   1.1.1 2018-02-08 子菜单高度修改为不超过一级菜单高度
  */
 ;(function (factory) {
   if (typeof define === "function" && define.amd) {
@@ -41,7 +42,7 @@
       menuItemHasIcon: false, // 菜单项是否有图标
       menuItemIconWidth: 20, // 菜单项图标宽度
       menuItemIconHeight: 20, // 菜单项图标高度
-      menuScrollPannel: 30, // 滚动按钮栏的高度
+      menuScrollPannelHeight: 30, // 滚动按钮栏的高度
       moreIconWidth: 10, // 更多图标的大小
       ellipticalChars: '...', // 超出字数时显示的省略标志
       isMenuStretched: true,
@@ -259,7 +260,7 @@
     sb += '</dl>';
     // 滚动按钮
     sb += '<div class="stretchmenu-slidebox">'
-          // + '<div class="stretchmenu-slideboxline"></div>'
+          + '<div class="stretchmenu-slideboxline"></div>'
           + '<a class="stretchmenu-scrollbtn stretchmenu-scrollbtn__up stretchmenu-scrollbtn__upoff"></a>'
           + '<a class="stretchmenu-scrollbtn stretchmenu-scrollbtn__down stretchmenu-scrollbtn__downon"></a>'
         + '</div>'
@@ -310,7 +311,7 @@
       // 列表调整宽度与高度
       $menuListShow.css({
         'width': opt.menuWidth + opt.scrollWidth + 'px',
-        'height': $menuListShow.parent().height() - opt.menuScrollPannel + 'px'
+        'height': $menuListShow.parent().height() - opt.menuScrollPannelHeight + 'px'
       });
       // 调整菜单项宽度
       $menuListShow.children('.stretchmenu-item').css({
@@ -368,6 +369,11 @@
     });
     $root.find('.stretchmenu-item__thirdlevel > .stretchmenu-more').css({
       'top': (opt.menuItemHeightThirdLevel - opt.moreIconWidth) / 2 + 'px'
+    });
+
+    // 滚动栏样式
+    $root.find('.stretchmenu-slidebox').css({
+      'height': opt.menuScrollPannelHeight + 'px'
     });
   }
 
@@ -691,6 +697,8 @@
       return false;
     }
 
+    // 菜单的高度
+    var rootHeight = $root.height()
     // **************************************调整对应菜单项的位置
     // 显示菜单的滚动的距离
     var scrollTop = $currentMenuListShow.scrollTop();
@@ -715,6 +723,10 @@
     $menuList.data('menuItemHeight', menuItemHeight);
     // 子菜单的最大高度
     var subMenuMaxHeight = menuItemHeight * opt.subMenuMaxShowSize;
+    if (subMenuMaxHeight > rootHeight) {
+      // 如果子菜单的最大高度超过了一级菜单的高度，则以一级菜单的高度为准(上方条件)
+      subMenuMaxHeight = rootHeight;
+    }
     // 子菜单的实际宽高
     var dimension = calcMenuWidthAndHeight($menuList.children().children('.stretchmenu-a'), 
       opt['menuItemFontSize' + level], menuItemHeight, subMenuMaxHeight, opt);
@@ -730,7 +742,7 @@
       menuListWidth = dimension.width + opt.scrollWidth;
       // 调整显示列表高度
       $menuListShow.css({
-        'height': menuHeight - opt.menuScrollPannel + 'px'
+        'height': menuHeight - opt.menuScrollPannelHeight + 'px'
       });
       // 显示滚动按钮
       $menuListShow.next().show();
@@ -789,7 +801,7 @@
     // if (hasScroll($menuListShow)) {
     //   // 调整显示列表高度
     //   $menuListShow.css({
-    //     'height': menuHeight - opt.menuScrollPannel + 'px'
+    //     'height': menuHeight - opt.menuScrollPannelHeight + 'px'
     //   });
     //   $menuListShow.next().show();
     //   // 有滚动条时更新更多按钮的位置，略微向右调整

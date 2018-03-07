@@ -1,6 +1,16 @@
 @backgroundColor: #2F4056; // 菜单背景颜色
 @backgroundColorHover: #415977; // 菜单悬浮颜色
 @backgroundColorActive: #6e8cb0; // 菜单选中颜色
+@menuBorderColor: @backgroundColorHover;
+
+@red: #e72025;
+@gray: #f9f9f9;
+@black: #333;
+@darkGray: darken(@gray, 10%);
+@lightRed: lighten(@red, 10%);
+@backgroundColorHover_red: @red; // 红色菜单风格悬浮颜色
+@backgroundColorActive_red: @red; // 红色菜单风格选中颜色
+@menuBorderColor_red: @darkGray;
 .stretchmenu {
   width: 200px; height: 100px; box-sizing: content-box; background-color: @backgroundColor;
   & > .stretchmenu-list__firstlevel {
@@ -102,13 +112,99 @@
   background-image: url(../img/arrowdown__off.png);
 }
 .stretchmenu-slidebox {
-  width: 100%; height: 29px; position: absolute; bottom: 0; text-align: center;
-  display: none; border-top: 1px solid @backgroundColorHover; background-color: @backgroundColor;
+  width: 100%; position: absolute; bottom: 0; text-align: center;
+  display: none; background-color: @backgroundColor;
 }
 .stretchmenu-slideboxline {
-  height: 1px; background-color: @backgroundColorHover;
+  width: 100%; height: 1px; background-color: @backgroundColorHover; position: absolute; top: 0;
 }
-// 左侧分割线
-.stretchmenu-menuline {
-  position: absolute; width: 1px; height: 100%; left: 0; background-color: @backgroundColorHover;
+// 菜单边框
+.stretchmenu-menuline__top {
+  position: absolute; width: 100%; height: 1px; top: 0; background-color: @menuBorderColor;
+}
+.stretchmenu-menuline__bottom {
+  position: absolute; width: 100%; height: 1px; bottom: 0; background-color: @menuBorderColor;
+}
+.stretchmenu-menuline__left {
+  position: absolute; width: 1px; height: 100%; left: 0; background-color: @menuBorderColor;
+}
+.stretchmenu-menuline__right {
+  position: absolute; width: 1px; height: 100%; right: 0; background-color: @menuBorderColor;
+}
+
+/** 红色风格 */
+.stretchmenu__red {
+  background-color: @gray;
+  .stretchmenu-a {
+    color: @black;
+  }
+  .stretchmenu-item {
+    background-color: @gray;
+  }
+  .stretchmenu-item__hover {
+    background-color: @red;
+    .stretchmenu-a {
+      color: #fff;
+    }
+    .stretchmenu-more__top {
+      background-color: #fff;
+    }
+    .stretchmenu-more__bottom {
+      background-color: #fff;
+    }
+  }
+  .stretchmenu-item__active {
+    background-color: @backgroundColorActive_red;
+    .stretchmenu-a {
+      color: #fff;
+    }
+    .stretchmenu-more__top {
+      background-color: #fff;
+    }
+    .stretchmenu-more__bottom {
+      background-color: #fff;
+    }
+  }
+  .stretchmenu-slidebox {
+    background-color: @gray;
+  }
+  .stretchmenu-slideboxline {
+    background-color: @darkGray;
+  }
+  .stretchmenu-menuline {
+    background-color: @darkGray;
+  }
+  .stretchmenu-scrollbtn__upon {
+    background-image: url(../img/arrowup__onred.png);
+  }
+  .stretchmenu-scrollbtn__upoff {
+    background-image: url(../img/arrowup__offred.png);
+  }
+  .stretchmenu-scrollbtn__downon {
+    background-image: url(../img/arrowdown__onred.png);
+  }
+  .stretchmenu-scrollbtn__downoff {
+    background-image: url(../img/arrowdown__offred.png);
+  }
+  .stretchmenu-more__top {
+    background-color: @black;
+  }
+  .stretchmenu-more__bottom {
+    background-color: @black;
+  }
+  .stretchmenu-menuline__top {
+    position: absolute; width: 100%; height: 1px; top: 0; background-color: @menuBorderColor_red;
+  }
+  .stretchmenu-menuline__bottom {
+    position: absolute; width: 100%; height: 1px; bottom: 0; background-color: @menuBorderColor_red;
+  }
+  .stretchmenu-menuline__left {
+    position: absolute; width: 1px; height: 100%; left: 0; background-color: @menuBorderColor_red;
+  }
+  .stretchmenu-menuline__right {
+    position: absolute; width: 1px; height: 100%; right: 0; background-color: @menuBorderColor_red;
+  }
+  // .stretchmenu-line {
+  //   background-color: @lightRed;
+  // }
 }

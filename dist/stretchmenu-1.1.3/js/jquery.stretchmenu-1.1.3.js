@@ -1,7 +1,7 @@
 /**
  * 左侧伸展导航菜单
  * @auto jzw
- * @version 1.1.0
+ * @version 1.1.3
  * @history
  *   1.0.0 2018-02-02 完成导航菜单基本功能
  *   1.0.1 2018-02-02 修改了js中部分变量无值可能会报错的问题
@@ -10,6 +10,9 @@
  *   1.0.3 2018-02-06 修改滚动到底部上方菜单项未对齐时突出显示菜单的问题
  *   1.0.4 2018-02-06 窗口大小改变后菜单改为进行重置，底部菜单项未显示完全时移入显示完全
  *   1.1.0 2018-02-07 加上是否有图标配置，并且如果有图标，则可以缩小放大
+ *   1.1.1 2018-02-08 子菜单高度修改为不超过一级菜单高度
+ *   1.1.2 2018-02-08 修改菜单初始化收缩状态的样式
+ *   1.1.3 2018-02-08 加上菜单伸缩时间配置参数stretchMenuSpeed
  */
 ;(function (factory) {
   if (typeof define === "function" && define.amd) {
@@ -41,10 +44,11 @@
       menuItemHasIcon: false, // 菜单项是否有图标
       menuItemIconWidth: 20, // 菜单项图标宽度
       menuItemIconHeight: 20, // 菜单项图标高度
-      menuScrollPannel: 30, // 滚动按钮栏的高度
+      menuScrollPannelHeight: 30, // 滚动按钮栏的高度
       moreIconWidth: 10, // 更多图标的大小
       ellipticalChars: '...', // 超出字数时显示的省略标志
       isMenuStretched: true,
+      stretchMenuSpeed: 300, // 收缩/伸展菜单时间(单位毫秒)
       clickMenu: function (data, e) {
         console.log(data);
       }, // 菜单点击事件
@@ -259,7 +263,7 @@
     sb += '</dl>';
     // 滚动按钮
     sb += '<div class="stretchmenu-slidebox">'
-          // + '<div class="stretchmenu-slideboxline"></div>'
+          + '<div class="stretchmenu-slideboxline"></div>'
           + '<a class="stretchmenu-scrollbtn stretchmenu-scrollbtn__up stretchmenu-scrollbtn__upoff"></a>'
           + '<a class="stretchmenu-scrollbtn stretchmenu-scrollbtn__down stretchmenu-scrollbtn__downon"></a>'
         + '</div>'
@@ -291,11 +295,6 @@
   function initStyles($root, opt) {
     // 初始节点加上样式
     $root.addClass('stretchmenu');
-    // 一级菜单背景
-    $root.css({
-      'width': opt.menuWidth + 'px'
-      // 'backgroundColor': opt.menuItemBgColorFirstLevel
-    });
 
     // 判断一级菜单是否超过最大高度，即是否会出现滚动条
     var showMenuItemSize = Math.floor($root.height() / opt.menuItemHeightFirstLevel);
@@ -310,7 +309,7 @@
       // 列表调整宽度与高度
       $menuListShow.css({
         'width': opt.menuWidth + opt.scrollWidth + 'px',
-        'height': $menuListShow.parent().height() - opt.menuScrollPannel + 'px'
+        'height': $menuListShow.parent().height() - opt.menuScrollPannelHeight + 'px'
       });
       // 调整菜单项宽度
       $menuListShow.children('.stretchmenu-item').css({
@@ -345,10 +344,6 @@
     initItemStyles($root, opt, 'SecondLevel');
     // 三级菜单项样式
     initItemStyles($root, opt, 'ThirdLevel');
-    // 二级菜单栏的样式
-    initListStyles($root.find('.stretchmenu-list__secondlevel'));
-    // 三级菜单栏的样式
-    initListStyles($root.find('.stretchmenu-list__thirdlevel'));
 
     // 菜单图标样式
     if (opt.menuItemHasIcon) {
@@ -369,6 +364,24 @@
     $root.find('.stretchmenu-item__thirdlevel > .stretchmenu-more').css({
       'top': (opt.menuItemHeightThirdLevel - opt.moreIconWidth) / 2 + 'px'
     });
+
+    // 滚动栏样式
+    $root.find('.stretchmenu-slidebox').css({
+      'height': opt.menuScrollPannelHeight + 'px'
+    });
+
+    // 判断菜单是否展开
+    if (opt.isMenuStretched) {
+      // 当前菜单是展开状态(上方条件)
+      // 菜单宽度
+      $root.css({
+        'width': opt.menuWidth + 'px'
+      });
+    } else {
+      // 当前菜单是收缩状态(上方条件)
+      // 设置菜单的收缩样式
+      setShrinkMenuStyles($root, opt);
+    }
   }
 
   /**
@@ -389,26 +402,54 @@
   }
 
   /**
-   * 初始化菜单栏的式样
-   * @param  {[type]} $menuList [description]
-   * @return {[type]}           [description]
+   * [setShrinkMenuStyles 设置菜单的收缩样式]
+   * @param {[type]} $root [description]
+   * @param {[type]} opt   [description]
    */
-  function initListStyles($menuList, isOver) {
-    // $menuList.css({
-    //   'width': '0px',
-    //   'height': '1px',
-    //   'right': '0px',
-    //   'overflow': 'hidden'
-    // });
-    // if (isOver === true) {
-    //   $menuList.css({
-    //     'bottom': '0px'
-    //   });
-    // } else if (isOver === false) {
-    //   $menuList.css({
-    //     'top': '0px'
-    //   });
-    // }
+  function setShrinkMenuStyles($root, opt) {
+    var $visibleBox = $root.children('.stretchmenu-list__visiblebox');
+    var $menuListShow = $visibleBox.children('.stretchmenu-list__firstlevel');
+    var $menuItemsShow = $menuListShow.children('.stretchmenu-item__firstlevel');
+    var $menuItemAsShow = $menuItemsShow.children('.stretchmenu-a__firstlevel');
+    var $menuItemIconsShow = $menuItemAsShow.children('.stretchmenu-itemi');
+    var $moreIcons = $menuItemsShow.children('.stretchmenu-more');
+    var $menuList = $root.children('.stretchmenu-list__firstlevel');
+    var $menuItems = $menuList.children('.stretchmenu-item__firstlevel');
+    var $menuItemAs = $menuItems.children('.stretchmenu-a__firstlevel');
+    var $scrollBtn = $visibleBox.find('.stretchmenu-scrollbtn');
+    var menuWidth = opt.menuShrinkWidth;
+    var menuListWidth = opt.menuShrinkWidth + opt.scrollWidth;
+    var scrollBtnMargin = '4px 2px 0';
+    var menuItemMarginRight = '0px';
+
+    // 隐藏更多图标
+    $moreIcons.hide();
+    // 文字隐藏
+    $menuItemAsShow.find('span').text('');
+    // 文字隐藏
+    $menuItemAs.text('');
+    
+    $root.css({
+      'width': menuWidth + 'px'
+    });
+    $visibleBox.css({
+      'width': menuWidth + 'px'
+    });
+    $menuListShow.css({
+      'width': menuListWidth + 'px'
+    });
+    $menuItemsShow.css({
+      'width': menuWidth + 'px'
+    });
+    $menuList.css({
+      'width': menuWidth + 'px'
+    });
+    $scrollBtn.css({
+      'margin': scrollBtnMargin
+    })
+    $menuItemIconsShow.css({
+      'marginRight': menuItemMarginRight
+    });
   }
 
   /**
@@ -691,6 +732,8 @@
       return false;
     }
 
+    // 菜单的高度
+    var rootHeight = $root.height()
     // **************************************调整对应菜单项的位置
     // 显示菜单的滚动的距离
     var scrollTop = $currentMenuListShow.scrollTop();
@@ -715,6 +758,10 @@
     $menuList.data('menuItemHeight', menuItemHeight);
     // 子菜单的最大高度
     var subMenuMaxHeight = menuItemHeight * opt.subMenuMaxShowSize;
+    if (subMenuMaxHeight > rootHeight) {
+      // 如果子菜单的最大高度超过了一级菜单的高度，则以一级菜单的高度为准(上方条件)
+      subMenuMaxHeight = rootHeight;
+    }
     // 子菜单的实际宽高
     var dimension = calcMenuWidthAndHeight($menuList.children().children('.stretchmenu-a'), 
       opt['menuItemFontSize' + level], menuItemHeight, subMenuMaxHeight, opt);
@@ -730,7 +777,7 @@
       menuListWidth = dimension.width + opt.scrollWidth;
       // 调整显示列表高度
       $menuListShow.css({
-        'height': menuHeight - opt.menuScrollPannel + 'px'
+        'height': menuHeight - opt.menuScrollPannelHeight + 'px'
       });
       // 显示滚动按钮
       $menuListShow.next().show();
@@ -783,13 +830,11 @@
     }
     // console.log(topDistanceParent + '-' + topDistance + '-' + $menuItem.height() + '-' + menuHeight)
 
-    // initListStyles($menuList, false);
-
     // 判断是否有滚动条，如果有，则显示滚动按钮
     // if (hasScroll($menuListShow)) {
     //   // 调整显示列表高度
     //   $menuListShow.css({
-    //     'height': menuHeight - opt.menuScrollPannel + 'px'
+    //     'height': menuHeight - opt.menuScrollPannelHeight + 'px'
     //   });
     //   $menuListShow.next().show();
     //   // 有滚动条时更新更多按钮的位置，略微向右调整
@@ -1372,16 +1417,16 @@
     opt.isMenuStretched = !opt.isMenuStretched;
     $root.animate({
       'width': menuWidth + 'px'
-    });
+    }, opt.stretchMenuSpeed, 'swing');
     $visibleBox.animate({
       'width': menuWidth + 'px'
-    });
+    }, opt.stretchMenuSpeed, 'swing');
     $menuListShow.animate({
       'width': menuListWidth + 'px'
-    });
+    }, opt.stretchMenuSpeed, 'swing');
     $menuItemsShow.animate({
       'width': menuWidth + 'px'
-    }, function () {
+    }, opt.stretchMenuSpeed, 'swing', function () {
       if (opt.isMenuStretched) {
         // 显示更多图标
         $moreIcons.show();
@@ -1389,7 +1434,7 @@
     });
     $menuList.animate({
       'width': menuWidth + 'px'
-    });
+    }, opt.stretchMenuSpeed, 'swing');
     $scrollBtn.css({
       'margin': scrollBtnMargin
     })
